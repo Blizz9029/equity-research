@@ -13,14 +13,34 @@ from textblob import TextBlob
 import yfinance as yf
 import requests
 from datetime import datetime, timedelta
-
-# Download NLTK data required for TextBlob
 import nltk
+
+# IMPORTANT: This must be the first Streamlit command!
+st.set_page_config(
+    page_title="Equity Research Analyzer",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Now download NLTK data after the page config
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
     with st.spinner('Downloading required NLTK data...'):
         nltk.download('punkt')
+
+# Custom CSS for better styling
+st.markdown("""
+<style>
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    /* Rest of your CSS */
+</style>
+""", unsafe_allow_html=True)
+
 
 # Set page configuration
 st.set_page_config(
@@ -30,59 +50,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
-st.markdown("""
-<style>
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        height: 50px;
-        white-space: pre-wrap;
-        background-color: #f0f2f6;
-        border-radius: 4px 4px 0px 0px;
-        gap: 1px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #6c63ff;
-        color: white;
-    }
-    h1, h2, h3 {
-        color: #3a4a65;
-    }
-    .metric-card {
-        background-color: #f9f9f9;
-        padding: 15px;
-        border-radius: 5px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-        margin-bottom: 10px;
-    }
-    .sentiment-positive {
-        color: #0f8c40;
-        font-weight: 600;
-    }
-    .sentiment-negative {
-        color: #e63946;
-        font-weight: 600;
-    }
-    .sentiment-neutral {
-        color: #898989;
-        font-weight: 600;
-    }
-    .financial-table {
-        font-size: 0.9rem;
-    }
-    .highlight-row {
-        background-color: #f0f8ff;
-    }
-</style>
-""", unsafe_allow_html=True)
+
 
 class PDFExtractor:
     def __init__(self, file_path):
