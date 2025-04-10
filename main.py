@@ -985,11 +985,18 @@ def main():
     st.title("📊 Equity Research Report Analyzer")
     
     st.markdown("""
-    Upload PDF research reports to extract key insights, metrics, and perform comparative analysis.
+    Upload PDF research reports to extract key insights, metrics, and perform comparative analysis. 
     The tool extracts target prices, recommendations, key sections, and performs sentiment analysis.
     """)
     
-    uploaded_files = st.file_uploader("Upload Research Reports (PDF)", type="pdf", accept_multiple_files=True)
+    # KEEP ONLY ONE FILE UPLOADER
+    # Use a unique key for the file uploader
+    uploaded_files = st.file_uploader(
+        "Upload Research Reports (PDF)", 
+        type="pdf", 
+        accept_multiple_files=True,
+        key="pdf_uploader_unique"
+    )
     
     if uploaded_files:
         # Process the uploaded files
@@ -1017,7 +1024,9 @@ def main():
             
             # Add a download section for full analysis report
             st.header("Export Analysis")
-            if st.button("Generate Full Analysis Report"):
+            if st.button("Generate Full Analysis Report", key="gen_report_btn"):
+                # Rest of your download code...
+
                 # Create a combined text report
                 report_text = f"# Equity Research Analysis Report\n\n"
                 report_text += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
