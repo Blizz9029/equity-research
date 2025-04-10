@@ -1,4 +1,3 @@
-I apologize for the syntax error. Let me fix the incomplete code in the `fetch_stock_info` function. Here's the corrected full code for your Streamlit application:
 
 ```python
 import streamlit as st
@@ -515,6 +514,183 @@ def display_metrics(results):
                     color_continuous_scale=['red', 'yellow', 'green'],
                     title="Sentiment Polarity Comparison")
         st.plotly_chart(fig, use_container_width=True)
+
+def fetch_stock_info(results):
+    """Fetch and display stock information and news"""
+    # Try to find a ticker in any of the reports
+    ticker = None
+    for result in results:
+        if 'ticker' in result['metrics']:
+            ticker = result['metrics']['ticker']
+            break
+    
+    if not ticker:
+        # Try to extract from company name
+        for result in results:
+            if 'company' in result['metrics']:
+                company = result['metrics']['company']
+                st.subheader(f"Company: {company}")
+                st.warning("No ticker symbol found. Please enter it manually to fetch market data.")
+                ticker = st.text_input("Enter Ticker Symbol", "")
+                break
+    
+    if ticker:
+        st.subheader(f"Market Data for {ticker}")
+        cols = st.columns([2, 1])
+        
+        with cols[0]:
+            # Get stock price history
+            hist, info = get_stock_data(ticker)
+            if not hist.empty:
+                # Plot stock price
+                fig = px.line(hist, y='Close', title=f"{ticker} Stock Price (Last Month)")
+                fig.update_layout(xaxis_title="Date", yaxis_title="Price")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning(f"Could not fetch price data for {ticker}")
+        
+        with cols[1]:
+            # Display basic stock info
+            if info:
+                st.markdown("<h4>Stock Info</h4>", unsafe_allow_html=True)
+                metrics = {
+                    "Current Price": info.get('currentPrice', 'N/A'),
+                    "Market Cap": f"{info.get('marketCap', 0) / 1e9:.2f}B" if 'marketCap' in info else 'N/A',
+                    "52-Week High": info.get('fiftyTwoWeekHigh', 'N/A'),
+                    "52-Week Low": info.get('fiftyTwoWeekLow', 'N/A'),
+                    "P/E Ratio": info.get('trailingPE', 'N/A'),
+                    "Dividend Yield": f"{info.get('dividendYield', 0) * 100:.2f}%" if 'dividendYield' in info else 'N/A'
+                }
+                
+                for key, value in metrics.items():
+                    st.markdown(f"<div class='metric-card'><b>{key}:</b> {value}</div>", unsafe_allow_html=True)
+        
+        # Get latest news
+        st.subheader("Latest News")
+        news = get_stock_news(ticker)
+        
+        if news:
+            for item in news:
+                with st.expander(f"{item.get('title', 'News Item')}"):
+                    st.write(f"**Source:** {item.get('source', 'Unknown')}")
+                    st.write(f"**Published:** {item.get('time_published', 'Unknown')}")
+                    st.write(item.get('summary', 'No summary available.'))
+                    if 'url' in item:
+                        st.markdown(f"[Read more]({item['url']})")
+        else:
+            st.info("No recent news found.")
+
+def main():
+    st.title("📊 Equity Research Report Analyzer")
+    
+    st.markdown("""
+    Upload PDF research reports to extract key insights, metrics, and perform comparative analysis.
+    The tool extracts target prices, recommendations, key sections, and performs sentiment analysis.
+    """)
+    
+    uploaded_files = st.file_uploader("Upload Research Reports (PDF)", type="pdf", accept_multiple_files=True)
+    
+    if uploaded_files:
+        # Process the uploaded files
+        results = analyze_reports(uploaded_files)
+        
+        if results:
+            # Display metrics
+            st.header("Key Metrics")
+            display_metrics(results)
+            
+            # Create tabs for different views
+            tab1, tab2, tab3, tab4 = st.tabs(["Report Sections", "Financial Data", "Tables", "Market Data"])
+            
+            with tab1:
+                display_sections(results)
+            
+            with tab2:
+                display_financial_data(results)
+            
+            with tab3:
+                display_tables(results)
+            
+            with tab4:
+                fetch_stock_info(results)
+            
+            # Add a download section for full analysis report
+            st.header("Export Analysis")
+            if st.button("Generate Full Analysis Report"):
+                # Create a combined text report
+                report_text = f"# Equity Research Analysis Report\n\n"
+                report_text += f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                
+                for i, result in enumerate(results):
+                    report_text += f"## Report {i+1}: {result['filename']}\n\n"
+                    
+                    # Add metrics
+                    report_text += "### Key Metrics\n\n"
+                    for key, value in result['metrics'].items():
+                        report_text += f"- **{key.replace('_', ' ').title()}:** {value}\n"
+                    
+                    # Add sentiment
+                    sentiment = result['sentiment']
+                    report_text += f"\n### Sentiment Analysis\n\n"
+                    report_text += f"- **Overall Sentiment:** {sentiment['sentiment'].title()}\n"
+                    report_text += f"- **Polarity:** {sentiment['polarity']:.2f}\n"
+                    report_text += f"- **Subjectivity:** {sentiment['subjectivity']:.2f}\n"
+                    
+                    # Add sections summary
+                    report_text += "\n### Key Sections\n\n"
+                    for section_name, content in result['sections'].items():
+                        short_content = content[:500] + "..." if len(content) > 500 else content
+                        report_text += f"#### {section_name.replace('_', ' ').title()}\n\n{short_content}\n\n"
+                    
+                    report_text += "---\n\n"
+                
+                # Add combined analysis if multiple reports
+                if len(results) > 1:
+                    report_text += "## Consolidated Analysis\n\n"
+                    # Add content based on your analysis...
+                
+                # Offer the report for download
+                st.download_button(
+                    "Download Analysis as Markdown",
+                    report_text,
+                    "equity_research_analysis.md",
+                    "text/markdown"
+                )
+    else:
+        # Display sample images to show what the app can do
+        st.info("👆 Upload PDF research reports to start the analysis")
+        
+        # Demo section
+        st.header("What this tool can do")
+        
+        demo_cols = st.columns(3)
+        with demo_cols[0]:
+            st.markdown("### 📈 Extract Key Metrics")
+            st.markdown("• Target prices\n• Recommendations\n• Expected returns\n• Financial data")
+            
+        with demo_cols[1]:
+            st.markdown("### 🔍 Analyze Sentiment")
+            st.markdown("• Positive/negative sentiment\n• Objective vs. subjective language\n• Compare multiple reports")
+            
+        with demo_cols[2]:
+            st.markdown("### 📰 Latest Market Data")
+            st.markdown("• Current stock prices\n• Stock performance\n• Recent news\n• Key financial ratios")
+        
+        st.markdown("---")
+        st.markdown("### 🔮 Special Features for Financial Reports")
+        special_cols = st.columns(2)
+        
+        with special_cols[0]:
+            st.markdown("#### Table Extraction")
+            st.markdown("• Automatically extract tables from PDFs\n• Identify financial data in tables\n• Export to CSV for further analysis")
+        
+        with special_cols[1]:
+            st.markdown("#### Financial Insights")
+            st.markdown("• Identify growth metrics and CAGR\n• Extract revenue and profit figures\n• Find key financial indicators")
+
+if __name__ == "__main__":
+    main()
+
 
 def display_financial_data(results):
     """Display financial data extracted from the reports"""
