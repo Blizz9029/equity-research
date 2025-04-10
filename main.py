@@ -583,9 +583,20 @@ def main():
     st.title("📊 Equity Research Report Analyzer")
     
     st.markdown("""
-    Upload PDF research reports to extract key insights, metrics, and perform comparative analysis.
+    Upload PDF research reports to extract key insights, metrics, and perform comparative analysis. 
     The tool extracts target prices, recommendations, key sections, and performs sentiment analysis.
     """)
+    
+    # Add a unique key to the file uploader
+    uploaded_files = st.file_uploader(
+        "Upload Research Reports (PDF)", 
+        type="pdf", 
+        accept_multiple_files=True,
+        key="pdf_uploader"  # Add this unique key
+    )
+    
+    # Rest of your main function...
+
     
     uploaded_files = st.file_uploader("Upload Research Reports (PDF)", type="pdf", accept_multiple_files=True)
     
