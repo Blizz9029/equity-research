@@ -544,16 +544,7 @@ def fetch_stock_info(results):
         st.subheader("Latest News")
         news = get_stock_news(ticker)
         
-        if news:
-            for item in news:
-                with st.expander(f"{item.get('title', 'News Item')}"):
-                    st.write(f"**Source:** {item.get('source', 'Unknown')}")
-                    st.write(f"**Published:** {item.get('time_published', 'Unknown')}")
-                    st.write(item.get('summary', 'No summary available.'))
-                    if 'url' in item:
-                        st.markdown(f"[Read more]({item['url']})")
-        else:
-            st.info("No recent news found.")
+        
 
 def main():
     st.title("📊 Equity Research Report Analyzer")
@@ -946,16 +937,7 @@ def fetch_stock_info(results):
         st.subheader("Latest News")
         news = get_stock_news(ticker)
         
-        if news:
-            for item in news:
-                with st.expander(f"{item.get('title', 'News Item')}"):
-                    st.write(f"**Source:** {item.get('source', 'Unknown')}")
-                    st.write(f"**Published:** {item.get('time_published', 'Unknown')}")
-                    st.write(item.get('summary', 'No summary available.'))
-                    if 'url' in item:
-                        st.markdown(f"[Read more]({item['url']})")
-        else:
-            st.info("No recent news found.")
+     
 
 def main():
     st.title("📊 Equity Research Report Analyzer")
