@@ -1,5 +1,4 @@
 
-```python
 import streamlit as st
 import fitz  # PyMuPDF
 import pdfplumber
