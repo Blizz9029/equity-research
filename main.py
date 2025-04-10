@@ -905,7 +905,7 @@ def fetch_stock_info(results):
                 for key, value in metrics.items():
                     st.markdown(f"<div class='metric-card'><b>{key}:</b> {value}</div>", unsafe_allow_html=True)
         
-     def fetch_stock_info(results):
+def fetch_stock_info(results):
     """Fetch and display stock information and news"""
     # Try to find a ticker in any of the reports
     ticker = None
