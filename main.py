@@ -14,6 +14,14 @@ import yfinance as yf
 import requests
 from datetime import datetime, timedelta
 
+# Download NLTK data required for TextBlob
+import nltk
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    with st.spinner('Downloading required NLTK data...'):
+        nltk.download('punkt')
+
 # Set page configuration
 st.set_page_config(
     page_title="Equity Research Analyzer",
